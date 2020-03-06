@@ -59,7 +59,7 @@ public class CardWindow extends Window {
 		JMenuItem saveFileMenuItem = new JMenuItem("Save As...");
 		saveFileMenuItem.addActionListener((_e) -> {
 			if (fileChooser.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION) {
-				try {
+				try { 
 					cardHandler.writeFlashcards(fileChooser.getSelectedFile(), deck);
 				} catch (IOException e) {
 					e.printStackTrace();

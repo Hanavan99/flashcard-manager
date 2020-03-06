@@ -100,7 +100,7 @@ public class CardEditorWindow extends Window {
 				card.setBack(backText.getText());
 			}
 
-		});
+		}); 
 
 		updateTagLists();
 	}

@@ -16,7 +16,7 @@ public abstract class Window {
 		frame.setDefaultCloseOperation(parent != null ? JFrame.HIDE_ON_CLOSE : JFrame.EXIT_ON_CLOSE);
 		frame.setLayout(null);
 	}
-	
+
 	public JFrame getFrame() {
 		return frame;
 	}
@@ -35,7 +35,7 @@ public abstract class Window {
 	public void hide() {
 		frame.setVisible(true);
 	}
-	
+
 	public void close() {
 		hide();
 		frame.dispose();
