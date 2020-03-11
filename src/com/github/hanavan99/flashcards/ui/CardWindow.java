@@ -5,6 +5,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.List;
 import java.util.Random;
 
 import javax.swing.JFileChooser;
@@ -18,6 +20,8 @@ import com.github.hanavan99.flashcards.io.FileCardHandler;
 import com.github.hanavan99.flashcards.io.ICardHandler;
 import com.github.hanavan99.flashcards.model.Flashcard;
 import com.github.hanavan99.flashcards.model.FlashcardDeck;
+import com.github.hanavan99.flashcards.util.CardQueryHelper;
+import com.github.hanavan99.flashcards.util.QueryHelper;
 
 public class CardWindow extends Window {
 
@@ -29,6 +33,9 @@ public class CardWindow extends Window {
 	private Random random = new Random();
 	private JFileChooser fileChooser;
 	private ICardHandler cardHandler;
+	private String queryText = "";
+	private QueryHelper<Flashcard> queryHelper = new CardQueryHelper();
+	private List<Flashcard> workingCardList;
 
 	public CardWindow() {
 		super("Flashcard Manager", 500, 500, null);
@@ -59,7 +66,7 @@ public class CardWindow extends Window {
 		JMenuItem saveFileMenuItem = new JMenuItem("Save As...");
 		saveFileMenuItem.addActionListener((_e) -> {
 			if (fileChooser.showSaveDialog(frame) == JFileChooser.APPROVE_OPTION) {
-				try { 
+				try {
 					cardHandler.writeFlashcards(fileChooser.getSelectedFile(), deck);
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -110,7 +117,10 @@ public class CardWindow extends Window {
 				case KeyEvent.VK_R: // random card
 					Flashcard[] cards = deck.getCards().values().toArray(new Flashcard[0]);
 					if (cards.length > 0) {
-						cardViewer.setFlashcard(cards[random.nextInt(cards.length)]);
+						Flashcard card = workingCardList.get(random.nextInt(workingCardList.size()));
+						card.setLastViewed(Calendar.getInstance().getTime());
+						card.setViewCount(card.getViewCount() + 1);
+						cardViewer.setFlashcard(card);
 					}
 					break;
 				}
@@ -119,6 +129,18 @@ public class CardWindow extends Window {
 		});
 
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+	}
+
+	private void updateCardList() {
+		if (deck != null) {
+			workingCardList = queryHelper.query(deck.getCards().values(), queryText);
+			frame.repaint();
+		}
+	}
+
+	public void setQueryText(String queryText) {
+		this.queryText = queryText;
+		updateCardList();
 	}
 
 	public FlashcardDeck getFlashcardDeck() {

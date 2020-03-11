@@ -16,6 +16,7 @@ public class Main {
 	public static void main(String[] args) {
 		window = new CardWindow();
 		window.setFlashcardDeck(new FlashcardDeck(UUID.randomUUID(), "Untitled Deck", "[No Description]", "No Creator", Calendar.getInstance().getTime(), new HashMap<UUID, Tag>(), new HashMap<UUID, Flashcard>()));
+		window.show();
 	}
 
 }

@@ -3,31 +3,38 @@ package com.github.hanavan99.flashcards.ui;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 
-import javax.swing.JOptionPane;
 import javax.swing.table.AbstractTableModel;
 
 import com.github.hanavan99.flashcards.model.Flashcard;
 import com.github.hanavan99.flashcards.model.FlashcardDeck;
 import com.github.hanavan99.flashcards.model.Tag;
+import com.github.hanavan99.flashcards.util.CardQueryHelper;
+import com.github.hanavan99.flashcards.util.QueryHelper;
 
 public class FlashcardDeckTableModel extends AbstractTableModel {
 
 	private static final long serialVersionUID = 426992611847361692L;
-	private static final String[] COLS = new String[] { "Front", "Back", "Tags", "Last Viewed" };
+	private static final String[] COLS = new String[] { "Front", "Back", "Tags", "Last Viewed", "View Count" };
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("MMM d, YYYY hh:mm:ss aa");
-	private String searchText = "";
+	private String queryText = "";
+	private QueryHelper<Flashcard> helper = new CardQueryHelper();
 
 	private FlashcardDeck deck;
-	private ArrayList<Flashcard> displayList = new ArrayList<Flashcard>();
+	private List<Flashcard> displayList = new ArrayList<Flashcard>();
 
 	public FlashcardDeckTableModel(FlashcardDeck deck) {
 		this.deck = deck;
 		updateCardList();
 	}
+	
+	public String getQueryText() {
+		return queryText;
+	}
 
-	public void setSearchText(String searchText) {
-		this.searchText = searchText;
+	public void setQueryText(String queryText) {
+		this.queryText = queryText;
 		updateCardList();
 		fireTableDataChanged();
 	}
@@ -83,6 +90,8 @@ public class FlashcardDeckTableModel extends AbstractTableModel {
 			}
 		case 3:
 			return DATE_FORMAT.format(card.getLastViewed());
+		case 4:
+			return card.getViewCount();
 		}
 		return null;
 	}
@@ -94,60 +103,62 @@ public class FlashcardDeckTableModel extends AbstractTableModel {
 
 	private void updateCardList() {
 		displayList.clear();
-		String[] search = searchText.toLowerCase().split(":", 2);
-		for (Flashcard card : deck.getCards().values()) {
-			if (search[0].equals("")) {
-				displayList.add(card);
-			} else {
-				switch (search[0]) {
-				case "notags":
-				case "notag":
-					if (card.getTags().size() == 0) {
-						displayList.add(card);
-					}
-					break;
-				case "tag":
-					for (Tag t : card.getTags()) {
-						if (t.getName().toLowerCase().contains(search[1])) {
-							displayList.add(card);
-							break;
-						}
-					}
-					break;
-				case "tagexact":
-					for (Tag t : card.getTags()) {
-						if (t.getName().toLowerCase().equals(search[1])) {
-							displayList.add(card);
-							break;
-						}
-					}
-					break;
-				case "front":
-					if (card.getFront().toLowerCase().contains(search[1])) {
-						displayList.add(card);
-					}
-					break;
-				case "frontexact":
-					if (card.getFront().toLowerCase().equals(search[1])) {
-						displayList.add(card);
-					}
-					break;
-				case "back":
-					if (card.getBack().toLowerCase().contains(search[1])) {
-						displayList.add(card);
-					}
-					break;
-				case "backexact":
-					if (card.getBack().toLowerCase().equals(search[1])) {
-						displayList.add(card);
-					}
-					break;
-				default:
-					JOptionPane.showMessageDialog(null, "Invalid search terms.");
-					return;
-				}
-			}
-		}
+
+		displayList = helper.query(deck.getCards().values(), queryText);
+//		String[] search = searchText.toLowerCase().split(":", 2);
+//		for (Flashcard card : deck.getCards().values()) {
+//			if (search[0].equals("")) {
+//				displayList.add(card);
+//			} else {
+//				switch (search[0]) {
+//				case "notags":
+//				case "notag":
+//					if (card.getTags().size() == 0) {
+//						displayList.add(card);
+//					}
+//					break;
+//				case "tag":
+//					for (Tag t : card.getTags()) {
+//						if (t.getName().toLowerCase().contains(search[1])) {
+//							displayList.add(card);
+//							break;
+//						}
+//					}
+//					break;
+//				case "tagexact":
+//					for (Tag t : card.getTags()) {
+//						if (t.getName().toLowerCase().equals(search[1])) {
+//							displayList.add(card);
+//							break;
+//						}
+//					}
+//					break;
+//				case "front":
+//					if (card.getFront().toLowerCase().contains(search[1])) {
+//						displayList.add(card);
+//					}
+//					break;
+//				case "frontexact":
+//					if (card.getFront().toLowerCase().equals(search[1])) {
+//						displayList.add(card);
+//					}
+//					break;
+//				case "back":
+//					if (card.getBack().toLowerCase().contains(search[1])) {
+//						displayList.add(card);
+//					}
+//					break;
+//				case "backexact":
+//					if (card.getBack().toLowerCase().equals(search[1])) {
+//						displayList.add(card);
+//					}
+//					break;
+//				default:
+//					JOptionPane.showMessageDialog(null, "Invalid search terms.");
+//					return;
+//				}
+//			}
+//		}
 		System.out.println(displayList.size());
 	}
 }

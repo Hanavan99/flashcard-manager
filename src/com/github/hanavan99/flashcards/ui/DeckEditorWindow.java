@@ -59,7 +59,8 @@ public class DeckEditorWindow extends Window {
 		JMenuItem editCardMenuItem = new JMenuItem("Edit Card");
 		editCardMenuItem.addActionListener((_e) -> {
 			if (cardTable.getSelectedRow() != -1) {
-				CardEditorWindow editor = new CardEditorWindow(deck, cardTableModel.getCardAt(cardTable.getSelectedRow()), this);
+				CardEditorWindow editor = new CardEditorWindow(deck,
+						cardTableModel.getCardAt(cardTable.getSelectedRow()), this);
 				editor.show();
 			} else {
 				JOptionPane.showMessageDialog(frame, "Please select a card to edit.");
@@ -70,7 +71,8 @@ public class DeckEditorWindow extends Window {
 		JMenuItem deleteCardMenuItem = new JMenuItem("Delete Card");
 		deleteCardMenuItem.addActionListener((_e) -> {
 			if (cardTable.getSelectedRow() != -1) {
-				if (JOptionPane.showConfirmDialog(frame, "Are you sure you want to delete this card?", "Confirm Delete", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+				if (JOptionPane.showConfirmDialog(frame, "Are you sure you want to delete this card?", "Confirm Delete",
+						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
 					deck.getCards().remove(cardTableModel.getCardAt(cardTable.getSelectedRow()).getID());
 					cardTableModel.fireTableDataChanged();
 				}
@@ -80,9 +82,20 @@ public class DeckEditorWindow extends Window {
 		});
 		editMenu.add(deleteCardMenuItem);
 
+		JMenuItem applySearchMenuItem = new JMenuItem("Apply Search to Card Viewer");
+		applySearchMenuItem.addActionListener((_e) -> {
+			if (parent instanceof CardWindow) {
+				CardWindow cw = (CardWindow) parent;
+				cw.setQueryText(cardTableModel.getQueryText());
+			} else {
+				JOptionPane.showMessageDialog(frame, "The parent of this frame is not a CardWindow");
+			}
+		});
+		editMenu.add(applySearchMenuItem);
+
 		searchText = new JTextField();
 		searchText.addActionListener((_e) -> {
-			cardTableModel.setSearchText(searchText.getText());
+			cardTableModel.setQueryText(searchText.getText());
 			tableScrollPane.invalidate();
 			frame.repaint();
 		});
