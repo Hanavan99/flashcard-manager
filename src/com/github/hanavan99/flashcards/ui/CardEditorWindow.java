@@ -15,13 +15,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import com.github.hanavan99.flashcards.context.Context;
 import com.github.hanavan99.flashcards.model.Flashcard;
-import com.github.hanavan99.flashcards.model.FlashcardDeck;
 import com.github.hanavan99.flashcards.model.Tag;
 
 public class CardEditorWindow extends Window {
 
-	private final FlashcardDeck deck;
+	private final Context context;
 	private final Flashcard card;
 	private JTextField idText;
 	private JTextField frontText;
@@ -31,9 +31,9 @@ public class CardEditorWindow extends Window {
 	private JButton addTagToCardButton;
 	private JButton removeTagFromCardButton;
 
-	public CardEditorWindow(FlashcardDeck deck, Flashcard card, Window parent) {
+	public CardEditorWindow(Context context, Flashcard card, Window parent) {
 		super("Edit Card", 420, 670, parent);
-		this.deck = deck;
+		this.context = context;
 		this.card = card;
 		frame.setResizable(false);
 
@@ -98,6 +98,7 @@ public class CardEditorWindow extends Window {
 			public void windowClosing(WindowEvent e) {
 				card.setFront(frontText.getText());
 				card.setBack(backText.getText());
+				context.fireCardUpdated(card);
 			}
 
 		}); 
@@ -108,7 +109,7 @@ public class CardEditorWindow extends Window {
 	private void updateTagLists() {
 		DefaultListModel<Tag> deckTagModel = (DefaultListModel<Tag>) deckTagList.getModel();
 		deckTagModel.clear();
-		List<Tag> deckTags = sortCollection(deck.getTags().values(), (a, b) -> a.getName().compareTo(b.getName()), new Tag[0]);
+		List<Tag> deckTags = sortCollection(context.getDeck().getTags().values(), (a, b) -> a.getName().compareTo(b.getName()), new Tag[0]);
 		for (Tag t : deckTags) {
 			if (!card.getTags().contains(t)) {
 				deckTagModel.addElement(t);

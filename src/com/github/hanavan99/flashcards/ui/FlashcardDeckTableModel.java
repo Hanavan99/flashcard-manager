@@ -3,45 +3,53 @@ package com.github.hanavan99.flashcards.ui;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
+import com.github.hanavan99.flashcards.context.Context;
+import com.github.hanavan99.flashcards.context.IContextListener;
 import com.github.hanavan99.flashcards.model.Flashcard;
-import com.github.hanavan99.flashcards.model.FlashcardDeck;
 import com.github.hanavan99.flashcards.model.Tag;
-import com.github.hanavan99.flashcards.util.CardQueryHelper;
-import com.github.hanavan99.flashcards.util.QueryHelper;
+import com.github.hanavan99.flashcards.util.Utils;
 
 public class FlashcardDeckTableModel extends AbstractTableModel {
 
 	private static final long serialVersionUID = 426992611847361692L;
-	private static final String[] COLS = new String[] { "Front", "Back", "Tags", "Last Viewed", "View Count" };
+	private static final String[] COLS = new String[] { "Front", "Back", "Tags", "Last Viewed", "Next View",
+			"View Count" };
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("MMM d, YYYY hh:mm:ss aa");
-	private String queryText = "";
-	private QueryHelper<Flashcard> helper = new CardQueryHelper();
 
-	private FlashcardDeck deck;
-	private List<Flashcard> displayList = new ArrayList<Flashcard>();
+	private final Context context;
 
-	public FlashcardDeckTableModel(FlashcardDeck deck) {
-		this.deck = deck;
-		updateCardList();
-	}
-	
-	public String getQueryText() {
-		return queryText;
-	}
+	public FlashcardDeckTableModel(Context context) {
+		this.context = context;
 
-	public void setQueryText(String queryText) {
-		this.queryText = queryText;
-		updateCardList();
-		fireTableDataChanged();
+		context.addContextListener(new IContextListener() {
+
+			@Override
+			public void deckChanged(Context context) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void cardUpdated(Context context, Flashcard card) {
+				fireTableDataChanged();
+			}
+
+			@Override
+			public void cardFilterUpdated(Context context, String filterString) {
+				fireTableDataChanged();
+			}
+
+		});
 	}
 
 	@Override
 	public int getRowCount() {
-		return displayList.size();
+		return context.getFilteredCardList().size();
 	}
 
 	@Override
@@ -65,12 +73,12 @@ public class FlashcardDeckTableModel extends AbstractTableModel {
 	}
 
 	public Flashcard getCardAt(int rowIndex) {
-		return displayList.get(rowIndex);
+		return context.getFilteredCardList().get(rowIndex);
 	}
 
 	@Override
 	public Object getValueAt(int rowIndex, int columnIndex) {
-		Flashcard card = displayList.get(rowIndex);
+		Flashcard card = context.getFilteredCardList().get(rowIndex);
 		switch (columnIndex) {
 		case 0:
 			return card.getFront();
@@ -91,6 +99,9 @@ public class FlashcardDeckTableModel extends AbstractTableModel {
 		case 3:
 			return DATE_FORMAT.format(card.getLastViewed());
 		case 4:
+			return DATE_FORMAT.format(card.getNewViewDate()) + " ("
+					+ Utils.dateDiffToString(Calendar.getInstance().getTime(), card.getNewViewDate()) + ")";
+		case 5:
 			return card.getViewCount();
 		}
 		return null;
@@ -99,66 +110,5 @@ public class FlashcardDeckTableModel extends AbstractTableModel {
 	@Override
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 
-	}
-
-	private void updateCardList() {
-		displayList.clear();
-
-		displayList = helper.query(deck.getCards().values(), queryText);
-//		String[] search = searchText.toLowerCase().split(":", 2);
-//		for (Flashcard card : deck.getCards().values()) {
-//			if (search[0].equals("")) {
-//				displayList.add(card);
-//			} else {
-//				switch (search[0]) {
-//				case "notags":
-//				case "notag":
-//					if (card.getTags().size() == 0) {
-//						displayList.add(card);
-//					}
-//					break;
-//				case "tag":
-//					for (Tag t : card.getTags()) {
-//						if (t.getName().toLowerCase().contains(search[1])) {
-//							displayList.add(card);
-//							break;
-//						}
-//					}
-//					break;
-//				case "tagexact":
-//					for (Tag t : card.getTags()) {
-//						if (t.getName().toLowerCase().equals(search[1])) {
-//							displayList.add(card);
-//							break;
-//						}
-//					}
-//					break;
-//				case "front":
-//					if (card.getFront().toLowerCase().contains(search[1])) {
-//						displayList.add(card);
-//					}
-//					break;
-//				case "frontexact":
-//					if (card.getFront().toLowerCase().equals(search[1])) {
-//						displayList.add(card);
-//					}
-//					break;
-//				case "back":
-//					if (card.getBack().toLowerCase().contains(search[1])) {
-//						displayList.add(card);
-//					}
-//					break;
-//				case "backexact":
-//					if (card.getBack().toLowerCase().equals(search[1])) {
-//						displayList.add(card);
-//					}
-//					break;
-//				default:
-//					JOptionPane.showMessageDialog(null, "Invalid search terms.");
-//					return;
-//				}
-//			}
-//		}
-		System.out.println(displayList.size());
 	}
 }

@@ -1,6 +1,8 @@
 package com.github.hanavan99.flashcards.ui;
 
 import java.awt.BorderLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -14,13 +16,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 
+import com.github.hanavan99.flashcards.context.Context;
 import com.github.hanavan99.flashcards.model.Flashcard;
-import com.github.hanavan99.flashcards.model.FlashcardDeck;
 import com.github.hanavan99.flashcards.model.Tag;
 
 public class DeckEditorWindow extends Window {
 
-	private FlashcardDeck deck;
+	private Context context;
 	private JMenuBar menu;
 	private JMenu editMenu;
 	private JTextField searchText;
@@ -28,9 +30,9 @@ public class DeckEditorWindow extends Window {
 	private FlashcardDeckTableModel cardTableModel;
 	private JScrollPane tableScrollPane;
 
-	public DeckEditorWindow(FlashcardDeck deck, Window parent) {
+	public DeckEditorWindow(Context context, Window parent) {
 		super("Edit Deck", 600, 800, parent);
-		this.deck = deck;
+		this.context = context;
 		frame.setLayout(new BorderLayout());
 
 		menu = new JMenuBar();
@@ -41,25 +43,34 @@ public class DeckEditorWindow extends Window {
 
 		JMenuItem editDeckSettingsMenuItem = new JMenuItem("Edit Deck Settings");
 		editDeckSettingsMenuItem.addActionListener((_e) -> {
-			DeckSettingsWindow settings = new DeckSettingsWindow(deck, this);
-			settings.show();
+			if (context.getDeck() != null) {
+				DeckSettingsWindow settings = new DeckSettingsWindow(context, this);
+				settings.show();
+			} else {
+				JOptionPane.showMessageDialog(frame, Context.MSG_NO_DECK_LOADED);
+			}
 		});
 		editMenu.add(editDeckSettingsMenuItem);
 
 		JMenuItem addCardMenuItem = new JMenuItem("Add Card");
 		addCardMenuItem.addActionListener((_e) -> {
-			Date now = Calendar.getInstance().getTime();
-			Flashcard card = new Flashcard(UUID.randomUUID(), "", "", new ArrayList<Tag>(), now, now, 0);
-			CardEditorWindow editor = new CardEditorWindow(deck, card, this);
-			editor.show();
-			deck.getCards().put(card.getID(), card);
+			if (context.getDeck() != null) {
+				Date now = Calendar.getInstance().getTime();
+				Flashcard card = new Flashcard(UUID.randomUUID(), "", "", new ArrayList<Tag>(), now, now, 0);
+				CardEditorWindow editor = new CardEditorWindow(context, card, this);
+				editor.show();
+				context.getDeck().getCards().put(card.getID(), card);
+				context.fireCardUpdated(card);
+			} else {
+				JOptionPane.showMessageDialog(frame, Context.MSG_NO_DECK_LOADED);
+			}
 		});
 		editMenu.add(addCardMenuItem);
 
 		JMenuItem editCardMenuItem = new JMenuItem("Edit Card");
 		editCardMenuItem.addActionListener((_e) -> {
-			if (cardTable.getSelectedRow() != -1) {
-				CardEditorWindow editor = new CardEditorWindow(deck,
+			if (context.getDeck() != null && cardTable.getSelectedRow() != -1) {
+				CardEditorWindow editor = new CardEditorWindow(context,
 						cardTableModel.getCardAt(cardTable.getSelectedRow()), this);
 				editor.show();
 			} else {
@@ -73,7 +84,7 @@ public class DeckEditorWindow extends Window {
 			if (cardTable.getSelectedRow() != -1) {
 				if (JOptionPane.showConfirmDialog(frame, "Are you sure you want to delete this card?", "Confirm Delete",
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-					deck.getCards().remove(cardTableModel.getCardAt(cardTable.getSelectedRow()).getID());
+					context.getDeck().getCards().remove(cardTableModel.getCardAt(cardTable.getSelectedRow()).getID());
 					cardTableModel.fireTableDataChanged();
 				}
 			} else {
@@ -81,28 +92,45 @@ public class DeckEditorWindow extends Window {
 			}
 		});
 		editMenu.add(deleteCardMenuItem);
+		editMenu.addSeparator();
 
 		JMenuItem applySearchMenuItem = new JMenuItem("Apply Search to Card Viewer");
 		applySearchMenuItem.addActionListener((_e) -> {
-			if (parent instanceof CardWindow) {
+			context.setFilterString(searchText.getText());
+		});
+		//editMenu.add(applySearchMenuItem);
+
+		JMenuItem showCardMenuItem = new JMenuItem("Show Card in Viewer");
+		showCardMenuItem.addActionListener((_e) -> {
+			if (parent instanceof CardWindow && cardTable.getSelectedRow() >= 0) {
 				CardWindow cw = (CardWindow) parent;
-				cw.setQueryText(cardTableModel.getQueryText());
+				cw.setFlashcard(cardTableModel.getCardAt(cardTable.getSelectedRow()));
 			} else {
-				JOptionPane.showMessageDialog(frame, "The parent of this frame is not a CardWindow");
+				JOptionPane.showMessageDialog(frame, "The parent of this frame is not a CardWindow or no card is selected");
 			}
 		});
-		editMenu.add(applySearchMenuItem);
+		editMenu.add(showCardMenuItem);
 
-		searchText = new JTextField();
+		searchText = new JTextField(context.getFilterString());
 		searchText.addActionListener((_e) -> {
-			cardTableModel.setQueryText(searchText.getText());
-			tableScrollPane.invalidate();
+			context.setFilterString(searchText.getText());
 			frame.repaint();
 		});
 
 		frame.add(searchText, BorderLayout.PAGE_START);
 
-		cardTable = new JTable(cardTableModel = new FlashcardDeckTableModel(deck));
+		cardTable = new JTable(cardTableModel = new FlashcardDeckTableModel(context));
+		cardTable.addMouseListener(new MouseAdapter() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (parent instanceof CardWindow && cardTable.getSelectedRow() >= 0) {
+					CardWindow cw = (CardWindow) parent;
+					cw.setFlashcard(cardTableModel.getCardAt(cardTable.getSelectedRow()));
+				}
+			}
+
+		});
 		frame.add(tableScrollPane = new JScrollPane(cardTable), BorderLayout.CENTER);
 	}
 

@@ -11,19 +11,21 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 
-import com.github.hanavan99.flashcards.model.FlashcardDeck;
+import com.github.hanavan99.flashcards.context.Context;
 import com.github.hanavan99.flashcards.model.Tag;
 
 public class TagEditorWindow extends Window {
 
-	private final FlashcardDeck deck;
+	public static final String WINDOW_TITLE = "Tag Editor (%s)";
+
+	private final Context context;
 	private JList<Tag> tagList;
 	private JMenuBar menu;
 	private JMenu editMenu;
 
-	public TagEditorWindow(FlashcardDeck deck, Window parent) {
-		super("Tag Editor", 300, 500, parent);
-		this.deck = deck;
+	public TagEditorWindow(Context context, Window parent) {
+		super(String.format(WINDOW_TITLE, context.getDeck().getName()), 300, 500, parent);
+		this.context = context;
 		frame.setLayout(new GridLayout());
 
 		menu = new JMenuBar();
@@ -34,10 +36,15 @@ public class TagEditorWindow extends Window {
 
 		JMenuItem addTagMenuItem = new JMenuItem("Add Tag");
 		addTagMenuItem.addActionListener((_e) -> {
-			String value = JOptionPane.showInputDialog(frame, "Enter the name of the tag:");
-			Tag tag = new Tag(UUID.randomUUID(), value, "[No Description]");
-			deck.getTags().put(tag.getID(), tag);
-			updateTagList();
+			if (context.getDeck() != null) {
+				String value = JOptionPane.showInputDialog(frame, "Enter the name of the tag:");
+				Tag tag = new Tag(UUID.randomUUID(), value, "[No Description]");
+				context.getDeck().getTags().put(tag.getID(), tag);
+				context.fireDeckChanged();
+				updateTagList();
+			} else {
+				JOptionPane.showMessageDialog(frame, "No deck is loaded.");
+			}
 		});
 		editMenu.add(addTagMenuItem);
 
@@ -45,7 +52,8 @@ public class TagEditorWindow extends Window {
 		editTagMenuItem.addActionListener((_e) -> {
 			Tag selected = tagList.getSelectedValue();
 			if (selected != null) {
-				selected.setName(JOptionPane.showInputDialog(frame, "Enter the name of this tag:", selected.getName()));
+				selected.setName(JOptionPane.showInputDialog(frame, "Edit the name of this tag:", selected.getName()));
+				context.fireDeckChanged();
 			} else {
 				JOptionPane.showMessageDialog(frame, "Please select a tag to edit.");
 			}
@@ -61,7 +69,7 @@ public class TagEditorWindow extends Window {
 	private void updateTagList() {
 		DefaultListModel<Tag> model = (DefaultListModel<Tag>) tagList.getModel();
 		model.clear();
-		for (Tag t : deck.getTags().values()) {
+		for (Tag t : context.getDeck().getTags().values()) {
 			model.addElement(t);
 		}
 		frame.repaint();

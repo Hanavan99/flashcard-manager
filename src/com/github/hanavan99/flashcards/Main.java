@@ -1,21 +1,42 @@
 package com.github.hanavan99.flashcards;
 
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.UUID;
-
+import com.github.hanavan99.flashcards.context.Context;
+import com.github.hanavan99.flashcards.context.IContextListener;
 import com.github.hanavan99.flashcards.model.Flashcard;
-import com.github.hanavan99.flashcards.model.FlashcardDeck;
-import com.github.hanavan99.flashcards.model.Tag;
 import com.github.hanavan99.flashcards.ui.CardWindow;
+import com.github.hanavan99.flashcards.util.CardQueryHelper;
 
 public class Main {
 
 	private static CardWindow window;
 
 	public static void main(String[] args) {
-		window = new CardWindow();
-		window.setFlashcardDeck(new FlashcardDeck(UUID.randomUUID(), "Untitled Deck", "[No Description]", "No Creator", Calendar.getInstance().getTime(), new HashMap<UUID, Tag>(), new HashMap<UUID, Flashcard>()));
+		Context ctx = new Context();
+		ctx.setQueryHelper(new CardQueryHelper());
+		ctx.setFilterString("");
+		ctx.addContextListener(new IContextListener() {
+
+			@Override
+			public void deckChanged(Context context) {
+				// TODO Auto-generated method stub
+				System.out.println("Deck changed");
+			}
+
+			@Override
+			public void cardUpdated(Context context, Flashcard card) {
+				// TODO Auto-generated method stub
+				System.out.println("Card updated");
+			}
+
+			@Override
+			public void cardFilterUpdated(Context context, String filterString) {
+				// TODO Auto-generated method stub
+				System.out.println("Card filter updated: " + filterString);
+			}
+			
+		});
+		
+		window = new CardWindow(ctx);
 		window.show();
 	}
 
