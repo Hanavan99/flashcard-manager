@@ -98,6 +98,7 @@ public class CardEditorWindow extends Window {
 			public void windowClosing(WindowEvent e) {
 				card.setFront(frontText.getText());
 				card.setBack(backText.getText());
+				context.fireDeckChanged();
 				context.fireCardUpdated(card);
 			}
 

@@ -126,6 +126,11 @@ public class Context {
 
 	public void fireDeckChanged() {
 		markDirty();
+		if (deck != null) {
+			filteredCardList = queryHelper.query(deck.getCards().values(), filterString);
+		} else {
+			filteredCardList = new ArrayList<Flashcard>();
+		}
 		for (IContextListener listener : listeners) {
 			listener.deckChanged(this);
 		}
