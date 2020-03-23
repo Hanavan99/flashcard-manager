@@ -36,17 +36,17 @@ public class CardViewer extends JComponent {
 	public CardViewer(Context context) {
 		this.context = context;
 		Button againButton = new Button("Again", Color.RED, () -> {
-			card.setNewViewDate(new Date(card.getLastViewed().getTime() + 1000 * 60 * 10)); // 10 minutes
+			card.setNewViewDate(new Date(card.getLastViewDate().getTime() + 1000 * 60 * 10)); // 10 minutes
 			chooseNewCard();
 			repaint();
 		}, -310, 10, 300, 50);
 		Button hardButton = new Button("Hard", Color.BLUE, () -> {
-			card.setNewViewDate(Utils.computeNewCardDate(card.getLastViewed(), card.getViewCount(), 0.25));
+			card.setNewViewDate(Utils.computeNewCardDate(card.getLastViewDate(), card.getViewCount(), 0.25));
 			chooseNewCard();
 			repaint();
 		}, -310, 70, 300, 50);
 		Button easyButton = new Button("Easy", Color.GREEN, () -> {
-			card.setNewViewDate(Utils.computeNewCardDate(card.getLastViewed(), card.getViewCount(), 1.0));
+			card.setNewViewDate(Utils.computeNewCardDate(card.getLastViewDate(), card.getViewCount(), 1.0));
 			chooseNewCard();
 			repaint();
 		}, -310, 130, 300, 50);

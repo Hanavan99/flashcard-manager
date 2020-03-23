@@ -56,7 +56,7 @@ public class Flashcard {
 		this.tags = tags;
 	}
 
-	public Date getLastViewed() {
+	public Date getLastViewDate() {
 		return lastViewed;
 	}
 

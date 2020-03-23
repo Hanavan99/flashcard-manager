@@ -39,7 +39,7 @@ public class CardQueryHelper extends QueryHelper<Flashcard> {
 			return -((Integer) a.getTags().size()).compareTo(b.getTags().size()); // sort most at top
 		});
 		addSortFunction("lastviewed", (a, b) -> {
-			return -a.getLastViewed().compareTo(b.getLastViewed()); // sort latest at the top
+			return -a.getLastViewDate().compareTo(b.getLastViewDate()); // sort latest at the top
 		});
 		addSortFunction("viewcount", (a, b) -> {
 			return -((Integer) a.getViewCount()).compareTo(b.getViewCount()); // sort most at top

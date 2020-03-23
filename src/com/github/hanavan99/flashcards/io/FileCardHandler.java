@@ -11,20 +11,44 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.UUID;
 
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 import com.github.hanavan99.flashcards.model.Flashcard;
 import com.github.hanavan99.flashcards.model.FlashcardDeck;
 import com.github.hanavan99.flashcards.model.Tag;
 
-public class FileCardHandler implements ICardHandler {
+public class FileCardHandler implements IFileHandler {
+
+	public static final FileFilter FILTER = new FileNameExtensionFilter("Deck Files (*.deck)", "deck");
 
 	@Override
-	public FlashcardDeck readFlashcards(File file) throws IOException {
+	public String getHandlerName() {
+		return "Deck File";
+	}
+	
+	@Override
+	public JFileChooser getFileChooser(File file) {
+		JFileChooser chooser = new JFileChooser(file);
+		chooser.setFileFilter(FILTER);
+		return chooser;
+	}
+
+	@Override
+	public boolean isValidFile(File file) throws IOException {
+		return true;
+	}
+
+	@Override
+	public FlashcardDeck readFlashcards(File file, IMessageCallback messageCallback) throws IOException {
 		DataInputStream in = new DataInputStream(new FileInputStream(file));
 
 		// read flashcard deck information
 		HashMap<UUID, Tag> tags = new HashMap<UUID, Tag>();
 		HashMap<UUID, Flashcard> cards = new HashMap<UUID, Flashcard>();
-		FlashcardDeck deck = new FlashcardDeck(readUUID(in), in.readUTF(), in.readUTF(), in.readUTF(), readDate(in), tags, cards);
+		FlashcardDeck deck = new FlashcardDeck(readUUID(in), in.readUTF(), in.readUTF(), in.readUTF(), readDate(in),
+				tags, cards);
 
 		// read in tags
 		int tagCount = in.readInt();
@@ -43,7 +67,8 @@ public class FileCardHandler implements ICardHandler {
 			for (int j = 0; j < cardTagCount; j++) {
 				cardTags.add(tags.get(readUUID(in)));
 			}
-			Flashcard card = new Flashcard(readUUID(in), in.readUTF(), in.readUTF(), cardTags, readDate(in), readDate(in), in.readInt());
+			Flashcard card = new Flashcard(readUUID(in), in.readUTF(), in.readUTF(), cardTags, readDate(in),
+					readDate(in), in.readInt());
 			cards.put(card.getID(), card);
 		}
 
@@ -52,7 +77,7 @@ public class FileCardHandler implements ICardHandler {
 	}
 
 	@Override
-	public void writeFlashcards(File file, FlashcardDeck deck) throws IOException {
+	public boolean writeFlashcards(File file, FlashcardDeck deck, IMessageCallback messageCallback) throws IOException {
 		DataOutputStream out = new DataOutputStream(new FileOutputStream(file));
 
 		// write flashcard deck information
@@ -80,11 +105,13 @@ public class FileCardHandler implements ICardHandler {
 			writeUUID(out, card.getID());
 			out.writeUTF(card.getFront());
 			out.writeUTF(card.getBack());
-			writeDate(out, card.getLastViewed());
+			writeDate(out, card.getLastViewDate());
 			writeDate(out, card.getNewViewDate());
 			out.writeInt(card.getViewCount());
 		}
 		out.close();
+
+		return true;
 	}
 
 	private UUID readUUID(DataInputStream in) throws IOException {

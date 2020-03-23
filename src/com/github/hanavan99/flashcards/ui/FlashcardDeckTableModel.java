@@ -97,7 +97,7 @@ public class FlashcardDeckTableModel extends AbstractTableModel {
 				return "[none]";
 			}
 		case 3:
-			return DATE_FORMAT.format(card.getLastViewed());
+			return DATE_FORMAT.format(card.getLastViewDate());
 		case 4:
 			return DATE_FORMAT.format(card.getNewViewDate()) + " ("
 					+ Utils.dateDiffToString(Calendar.getInstance().getTime(), card.getNewViewDate()) + ")";

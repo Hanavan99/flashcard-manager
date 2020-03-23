@@ -1,12 +1,18 @@
 package com.github.hanavan99.flashcards.context;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
+
+import com.github.hanavan99.flashcards.io.IFileHandler;
+import com.github.hanavan99.flashcards.io.IMessageCallback;
 import com.github.hanavan99.flashcards.model.Flashcard;
 import com.github.hanavan99.flashcards.model.FlashcardDeck;
 import com.github.hanavan99.flashcards.util.QueryHelper;
@@ -20,11 +26,13 @@ public class Context {
 
 	private FlashcardDeck deck;
 	private File deckFile;
+	private IFileHandler currentFileHandler;
 	private String filterString;
 	private QueryHelper<Flashcard> queryHelper;
 	private List<Flashcard> filteredCardList;
 	private List<Flashcard> practiceCardList;
 	private boolean isDirty;
+	private List<IFileHandler> fileHandlers = new ArrayList<IFileHandler>();
 	private ArrayList<IContextListener> listeners = new ArrayList<IContextListener>();
 
 	public Context() {
@@ -39,6 +47,16 @@ public class Context {
 		};
 		t.scheduleAtFixedRate(task, 0, 1000); // used to update the practice card list every second so as to not do to
 												// many unnecessary calculations
+	}
+
+	public void registerFileHandler(IFileHandler handler) {
+		if (handler != null) {
+			fileHandlers.add(handler);
+		}
+	}
+
+	public IFileHandler[] getFileHandlers() {
+		return fileHandlers.toArray(new IFileHandler[0]);
 	}
 
 	public FlashcardDeck getDeck() {
@@ -57,6 +75,14 @@ public class Context {
 
 	public void setDeckFile(File deckFile) {
 		this.deckFile = deckFile;
+	}
+
+	public IFileHandler getCurrentFileHandler() {
+		return currentFileHandler;
+	}
+
+	public void setCurrentFileHandler(IFileHandler handler) {
+		this.currentFileHandler = handler;
 	}
 
 	public String getFilterString() {
@@ -148,5 +174,36 @@ public class Context {
 			listener.cardFilterUpdated(this, filterString);
 		}
 	}
+
+//	public void openDeck(File f, IMessageCallback messageCallback) throws IOException {
+//		for (IFileHandler handler : getFileHandlers()) {
+//			try {
+//				if (handler.isValidFile(f)) {
+//					setDeck(handler.readFlashcards(f, messageCallback));
+//					setDeckFile(f);
+//					markClean();
+//					return;
+//				}
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		throw new IOException("no matching filefilter found");
+//	}
+
+//	public void saveDeck(File f, FileFilter filter, IMessageCallback messageCallback) throws IOException {
+//		for (IFileHandler handler : getFileHandlers()) {
+//			try {
+//				if (handler.getFileNameFilter().equals(filter)) {
+//					handler.writeFlashcards(f, getDeck(), messageCallback);
+//					markClean();
+//					return;
+//				}
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		throw new IOException("no matching filefilter found");
+//	}
 
 }

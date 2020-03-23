@@ -1,8 +1,8 @@
 package com.github.hanavan99.flashcards;
 
 import com.github.hanavan99.flashcards.context.Context;
-import com.github.hanavan99.flashcards.context.IContextListener;
-import com.github.hanavan99.flashcards.model.Flashcard;
+import com.github.hanavan99.flashcards.io.DirectoryHandlerV1;
+import com.github.hanavan99.flashcards.io.FileCardHandler;
 import com.github.hanavan99.flashcards.ui.CardWindow;
 import com.github.hanavan99.flashcards.util.CardQueryHelper;
 
@@ -14,28 +14,9 @@ public class Main {
 		Context ctx = new Context();
 		ctx.setQueryHelper(new CardQueryHelper());
 		ctx.setFilterString("");
-		ctx.addContextListener(new IContextListener() {
+		ctx.registerFileHandler(new FileCardHandler());
+		ctx.registerFileHandler(new DirectoryHandlerV1());
 
-			@Override
-			public void deckChanged(Context context) {
-				// TODO Auto-generated method stub
-				System.out.println("Deck changed");
-			}
-
-			@Override
-			public void cardUpdated(Context context, Flashcard card) {
-				// TODO Auto-generated method stub
-				System.out.println("Card updated");
-			}
-
-			@Override
-			public void cardFilterUpdated(Context context, String filterString) {
-				// TODO Auto-generated method stub
-				System.out.println("Card filter updated: " + filterString);
-			}
-			
-		});
-		
 		window = new CardWindow(ctx);
 		window.show();
 	}
